@@ -76,7 +76,7 @@ jobs:
     runs-on: macos-13
 
     # No need to run on the read-only mirror, unless it is a PR.
-    if: github.repository != 'qbitscoin-core/gui' || github.event_name == 'pull_request'
+    if: github.repository != 'bitcoin-core/gui' || github.event_name == 'pull_request'
 
     timeout-minutes: 120
 
@@ -130,7 +130,7 @@ jobs:
     runs-on: windows-2022
 
     # No need to run on the read-only mirror, unless it is a PR.
-    if: github.repository != 'qbitscoin-core/gui' || github.event_name == 'pull_request'
+    if: github.repository != 'bitcoin-core/gui' || github.event_name == 'pull_request'
 
     env:
       CCACHE_MAXSIZE: '200M'
