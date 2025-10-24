@@ -1,0 +1,33 @@
+# /etc/conf.d/qbitscoind: config file for /etc/init.d/qbitscoind
+
+# Config file location
+#QBITSCOIND_CONFIGFILE="/etc/qbitscoin/qbitscoin.conf"
+
+# What directory to write pidfile to?  (created and owned by $QBITSCOIND_USER)
+#QBITSCOIND_PIDDIR="/var/run/qbitscoind"
+
+# What filename to give the pidfile
+#QBITSCOIND_PIDFILE="${QBITSCOIND_PIDDIR}/qbitscoind.pid"
+
+# Where to write qbitscoind data (be mindful that the blockchain is large)
+#QBITSCOIND_DATADIR="/var/lib/qbitscoind"
+
+# User and group to own qbitscoind process
+#QBITSCOIND_USER="qbitscoin"
+#QBITSCOIND_GROUP="qbitscoin"
+
+# Path to qbitscoind executable
+#QBITSCOIND_BIN="/usr/bin/qbitscoind"
+
+# Nice value to run qbitscoind under
+#QBITSCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#QBITSCOIND_OPTS=""
+
+# The timeout in seconds OpenRC will wait for qbitscoind to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+QBITSCOIND_SIGTERM_TIMEOUT=600

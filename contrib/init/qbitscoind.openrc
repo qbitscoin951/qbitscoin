@@ -1,0 +1,93 @@
+#!/sbin/openrc-run
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/qbitscoin/.qbitscoin" ]; then
+	QBITSCOIND_DEFAULT_DATADIR="/var/lib/qbitscoin/.qbitscoin"
+else
+	QBITSCOIND_DEFAULT_DATADIR="/var/lib/qbitscoind"
+fi
+
+QBITSCOIND_CONFIGFILE=${QBITSCOIND_CONFIGFILE:-/etc/qbitscoin/qbitscoin.conf}
+QBITSCOIND_PIDDIR=${QBITSCOIND_PIDDIR:-/var/run/qbitscoind}
+QBITSCOIND_PIDFILE=${QBITSCOIND_PIDFILE:-${QBITSCOIND_PIDDIR}/qbitscoind.pid}
+QBITSCOIND_DATADIR=${QBITSCOIND_DATADIR:-${QBITSCOIND_DEFAULT_DATADIR}}
+QBITSCOIND_USER=${QBITSCOIND_USER:-${QBITSCOIN_USER:-qbitscoin}}
+QBITSCOIND_GROUP=${QBITSCOIND_GROUP:-qbitscoin}
+QBITSCOIND_BIN=${QBITSCOIND_BIN:-/usr/bin/qbitscoind}
+QBITSCOIND_NICE=${QBITSCOIND_NICE:-${NICELEVEL:-0}}
+QBITSCOIND_OPTS="${QBITSCOIND_OPTS:-${QBITSCOIN_OPTS}}"
+
+name="Qbitscoin Core Daemon"
+description="Qbitscoin cryptocurrency P2P network daemon"
+
+command="/usr/bin/qbitscoind"
+command_args="-pid=\"${QBITSCOIND_PIDFILE}\" \
+		-conf=\"${QBITSCOIND_CONFIGFILE}\" \
+		-datadir=\"${QBITSCOIND_DATADIR}\" \
+		-daemon \
+		${QBITSCOIND_OPTS}"
+
+required_files="${QBITSCOIND_CONFIGFILE}"
+start_stop_daemon_args="-u ${QBITSCOIND_USER} \
+			-N ${QBITSCOIND_NICE} -w 2000"
+pidfile="${QBITSCOIND_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${QBITSCOIND_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${QBITSCOIND_USER}:${QBITSCOIND_GROUP}" \
+	"${QBITSCOIND_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${QBITSCOIND_USER}:${QBITSCOIND_GROUP}" \
+	"${QBITSCOIND_PIDDIR}"
+
+	checkpath -f \
+	-o "${QBITSCOIND_USER}:${QBITSCOIND_GROUP}" \
+	-m 0660 \
+	"${QBITSCOIND_CONFIGFILE}"
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if grep -qs '^rpcuser=' "${QBITSCOIND_CONFIGFILE}" && \
+		! grep -qs '^rpcpassword=' "${QBITSCOIND_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run qbitscoind."
+		eerror "The setting must appear in ${QBITSCOIND_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"Qbitscoin Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

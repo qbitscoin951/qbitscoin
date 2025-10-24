@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Qbitscoin Core Security Policy
+    url: https://github.com/qbitscoin/qbitscoin/blob/master/SECURITY.md
+    about: View security policy
+  - name: Qbitscoin Core Developers
+    url: https://qbitscoincore.org
+    about: Qbitscoin Core homepage
